@@ -1,0 +1,61 @@
+output_dir: ./experiments/
+
+dataset:
+  class: WD50K_HG
+  path: ../../../../data/
+
+model:
+    class: HBFNet
+#    version: None  # used to indicate HBFNet_v0 and HBFNet_v1
+    nbf_config:
+      input_dim: 32
+      hidden_dims: [32, 32, 32, 32, 32, 32]
+      message_func: "distmult"
+      aggregate_func: "pna"
+      short_cut: yes
+      layer_norm: yes
+      dependent: yes
+    hyper_relation_learner_config:
+      version: "v1"
+      input_dim: 32
+      output_dim: 32  # output_dim must be equal to the input_dim of nbf_config
+      opn: "rotate"
+      qual_aggregate: "sum"
+      qual_n: "sum"
+      alpha: 0.4
+      gcn_drop: 0.3
+      use_qual_embedding: yes
+      transformer_config:
+          # TODO: starE use 200 input dim
+          d_model : 32
+          nhead : 4
+          dim_feedforward: 512
+          dropout: 0.1
+          num_layers: 2
+          max_len: 150  # TODO: for wd50k, starE use 15
+          use_positional_encoding: yes
+    score_config:
+      symmetric: false  # in fact, symmetric is used by official NBFNet, but NBFNet-PyG
+                          # does not support this, so I add this parameter here.
+      concat_hidden: no
+      num_mlp_layer: 2
+
+
+
+task:
+  num_negative: 256
+  adversarial_temperature: 0.5
+  sample_weight: no
+  metric: [mr, mrr, hits@1, hits@3, hits@10]
+  strict_negative: yes
+  n_ary_negative: yes
+
+optimizer:
+  class: Adam
+  lr: 0.000667
+
+train:
+  gpus: [4]
+  batch_size: 16
+  num_epoch: 200
+  log_interval: 100

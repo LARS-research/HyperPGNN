@@ -1,0 +1,55 @@
+output_dir: ./experiments/
+
+dataset:
+  class: JF17K_parse_HG
+  path: ../../../../data/
+
+model:
+    class: HBFNet
+#    version: None  # used to indicate HBFNet_v0 and HBFNet_v1
+    nbf_config:
+      input_dim: 32
+      hidden_dims: [32, 32, 32, 32, 32, 32]
+      message_func: "distmult"
+      aggregate_func: "pna"
+      short_cut: yes
+      layer_norm: yes
+      dependent: yes
+    hyper_relation_learner_config:
+      version: "v1"
+      input_dim: 32
+      output_dim: 32  # output_dim must be equal to the input_dim of nbf_config
+      opn: "rotate"
+      qual_aggregate: "sum"
+      qual_n: "sum"
+      alpha: 0.6
+      gcn_drop: 0.1
+      use_qual_embedding: yes
+    score_config:
+      symmetric: false  # in fact, symmetric is used by official NBFNet, but NBFNet-PyG
+                          # does not support this, so I add this parameter here.
+      concat_hidden: no
+      num_mlp_layer: 2
+
+
+
+task:
+  num_negative: 256
+  adversarial_temperature: 0.7
+  sample_weight: no
+  metric: [mr, mrr, hits@1, hits@3, hits@10]
+  strict_negative: yes
+  n_ary_negative: yes
+
+optimizer:
+  class: Adam
+  lr: 0.0016
+
+train:
+  gpus: [3]
+  batch_size: 32
+  num_epoch: 200
+  log_interval: 100
+  step: 5
+
+# checkpoint: "model_epoch_5.pth"
